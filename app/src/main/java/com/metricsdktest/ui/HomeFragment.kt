@@ -32,10 +32,10 @@ import androidx.fragment.app.setFragmentResultListener
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.fragment.findNavController
-import com.metric.sdk.ui.sdklaucher.MetricLauncherContract
 import com.metric.sdk.ui.sdklaucher.Reason
 import com.metric.sdk.ui.sdklaucher.VerificationOutcome
 import com.metric.sdk.ui.sdklaucher.launchSdk
+import com.metric.sdk.ui.sdklaucher.listenForMetricSdkResult
 import com.metricsdktest.ui.theme.MetricSDKTestTheme
 
 /**
@@ -45,8 +45,7 @@ import com.metricsdktest.ui.theme.MetricSDKTestTheme
 class HomeFragment: Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setFragmentResultListener(MetricLauncherContract.requestKey) { requestKey, bundle ->
-            val outcome = bundle.getParcelable<VerificationOutcome>(MetricLauncherContract.resultKey)
+        listenForMetricSdkResult { outcome ->
             when (outcome) {
                 is VerificationOutcome.Failed -> {
                     val resultText = when (outcome.reason) {
@@ -57,6 +56,7 @@ class HomeFragment: Fragment() {
                         Reason.UNAUTHORISED -> "UNAUTHORISED"
                         Reason.UNKNOWN -> "UNKNOWN"
                     }
+                    Toast.makeText(requireContext(), resultText, Toast.LENGTH_LONG).show()
                     Log.e("TAG", "verification failed $resultText")
                 }
                 is VerificationOutcome.Success -> {

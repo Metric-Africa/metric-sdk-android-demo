@@ -1,6 +1,8 @@
 package com.metricsdktest
 
 import android.app.Application
+import android.content.Context
+import android.content.pm.ApplicationInfo
 import android.graphics.Color
 import com.metric.sdk.init.BasicMetricSettings
 import com.metric.sdk.init.ClientAuthenticator
@@ -49,9 +51,12 @@ class App: Application() {
                         )
                     }
                 ),
-                authenticator = { getAuthenticator(BuildConfig.DEBUG) },
-                environment = if (BuildConfig.DEBUG) Environment.Dev else Environment.Prod,
+                authenticator = { getAuthenticator(isDebug) },
+                environment = if (isDebug) Environment.Dev else Environment.Prod,
             )
         )
     }
+
+    private val Context.isDebug: Boolean
+        get() = applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0
 }
