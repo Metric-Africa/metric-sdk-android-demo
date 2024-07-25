@@ -25,17 +25,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.setFragmentResultListener
-import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
-import androidx.navigation.fragment.findNavController
 import com.metric.sdk.ui.sdklaucher.Reason
 import com.metric.sdk.ui.sdklaucher.VerificationOutcome
-import com.metric.sdk.ui.sdklaucher.launchSdk
-import com.metric.sdk.ui.sdklaucher.listenForMetricSdkResult
+import com.metric.sdk.ui.sdklaucher.legacy.MetricSdkContract
 import com.metricsdktest.ui.theme.MetricSDKTestTheme
 
 /**
@@ -43,30 +37,28 @@ import com.metricsdktest.ui.theme.MetricSDKTestTheme
  * Created 02/08/2023 at 10:56 pm
  */
 class HomeFragment: Fragment() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        listenForMetricSdkResult { outcome ->
-            when (outcome) {
-                is VerificationOutcome.Failed -> {
-                    val resultText = when (outcome.reason) {
-                        Reason.LIVENESS_FAILED -> "LIVENESS_FAILED"
-                        Reason.CANCELLED -> "CANCELLED"
-                        Reason.INVALID_TOKEN -> "INVALID_TOKEN"
-                        Reason.VERIFICATION_FAILED -> "VERIFICATION_FAILED"
-                        Reason.UNAUTHORISED -> "UNAUTHORISED"
-                        Reason.UNKNOWN -> "UNKNOWN"
-                    }
-                    Toast.makeText(requireContext(), resultText, Toast.LENGTH_LONG).show()
-                    Log.e("TAG", "verification failed $resultText")
+
+    private val metricSdkResultLauncher = registerForActivityResult(MetricSdkContract()) { outcome ->
+        var resultText = ""
+        when (outcome) {
+            is VerificationOutcome.Failed -> {
+                resultText = when (outcome.reason) {
+                    Reason.LIVENESS_FAILED -> "LIVENESS_FAILED"
+                    Reason.CANCELLED -> "CANCELLED"
+                    Reason.INVALID_TOKEN -> "INVALID_TOKEN"
+                    Reason.VERIFICATION_FAILED -> "VERIFICATION_FAILED"
+                    Reason.UNAUTHORISED -> "UNAUTHORISED"
+                    Reason.UNKNOWN -> "UNKNOWN"
                 }
-                is VerificationOutcome.Success -> {
-                    Log.e("TAG", "verification succeeded $outcome")
-                }
-                null -> {
-                    Log.e("TAG", "null received")
-                }
+                Log.e("TAG", "verification failed $resultText")
+            }
+
+            is VerificationOutcome.Success -> {
+                resultText = "success"
+                Log.e("TAG", "verification succeeded $outcome")
             }
         }
+        Toast.makeText(requireContext(), resultText, Toast.LENGTH_LONG).show()
     }
 
     override fun onCreateView(
@@ -92,7 +84,7 @@ class HomeFragment: Fragment() {
 
     private fun launchSdk(token: String) {
         if (token.isBlank()) return
-        findNavController().launchSdk(token)
+        metricSdkResultLauncher.launch(token)
     }
 }
 
