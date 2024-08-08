@@ -29,7 +29,6 @@ import androidx.compose.ui.unit.dp
 import androidx.fragment.app.Fragment
 import com.metric.sdk.ui.sdklaucher.Reason
 import com.metric.sdk.ui.sdklaucher.VerificationOutcome
-import com.metric.sdk.ui.sdklaucher.legacy.MetricSdkContract
 import com.metricsdktest.ui.theme.MetricSDKTestTheme
 
 /**
@@ -38,7 +37,7 @@ import com.metricsdktest.ui.theme.MetricSDKTestTheme
  */
 class HomeFragment: Fragment() {
 
-    private val metricSdkResultLauncher = registerForActivityResult(MetricSdkContract()) { outcome ->
+    private val metricSdkResultLauncher = registerForActivityResult(MetricSdkLauncherContract()) { outcome ->
         var resultText = ""
         when (outcome) {
             is VerificationOutcome.Failed -> {
@@ -57,6 +56,8 @@ class HomeFragment: Fragment() {
                 resultText = "success"
                 Log.e("TAG", "verification succeeded $outcome")
             }
+
+            null -> {}
         }
         Toast.makeText(requireContext(), resultText, Toast.LENGTH_LONG).show()
     }
